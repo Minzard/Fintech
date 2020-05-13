@@ -7,7 +7,8 @@ app.set('view engine', 'ejs'); // select view templet engine
 
 app.use(express.static(path.join(__dirname, 'public'))); // to use static asset
 
-
+app.use(express.json());
+app.use(express.urlencoded({extended:false}));
 
 app.get('/', function (req, res) {
     var title = "javascript"
@@ -25,4 +26,21 @@ app.get('/test', function (req, res) {
 app.get('/design', function(req, res) {
     res.render('designTest')    
 }) 
+
+app.get('/dataSend', function(req, res) {
+    res.render('dataSend')
+})
+
+app.post('/getTime', function(req, res) {
+    var now = new Date()
+    res.json(now)
+})
+
+app.post('/getData', function(req, res) {
+    console.log(req.body)
+    var userData = req.body.userInputData
+    console.log('userData = ', userData)
+    res.json(userData + "!!!")
+})
+
 app.listen(3000)
