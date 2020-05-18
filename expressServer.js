@@ -60,6 +60,7 @@ app.post('/authTest', auth, function(req, res) {
     res.json(req.decoded)
 })
 
+
 //-------Service Start -------//
 app.get('/signUp', function(req, res) {
     res.render('signUp');
@@ -71,11 +72,22 @@ app.get('/login', function(req, res) {
 
 app.get('/main', function(req, res) {
     res.render('main');
-
 })
 
 app.get('/balance', function(req, res) {
     res.render('balance');
+})
+
+app.get('/qrCode', function(req, res) {
+    res.render('qrCode');
+})
+
+app.get('/qrReader' , function(req, res) {
+    res.render('qrReader');
+})
+
+app.get('/qrReader2' , function(req, res) {
+    res.render('qrReader2');
 })
 
 app.get('/authResult', function(req, res) {
@@ -262,5 +274,178 @@ app.post('/balance', auth, function(req, res) {
         }
     })
 })
+
+app.post('/transactionlist', auth, function(req, res) {
+    var userId = req.decoded.userId;
+    var fin_use_num = req.body.fin_use_num;
+
+    var countnum = Math.floor(Math.random() * 1000000000) + 1;
+    var transId = "T991624360U" + countnum;
+
+    var sql = "SELECT * from fintech.user WHERE id = ?"
+
+    connection.query(sql, [userId], function(err, result){
+        if(err) {
+            console.error(err)
+            throw err
+        }
+        else {
+            console.log(result)
+            var option = {
+                method : "GET",
+                url : "https://testapi.openbanking.or.kr/v2.0/account/transaction_list/fin_num",
+                headers : {
+                    Authorization : "Bearer " + result[0].accesstoken
+                },
+                qs : {
+                    bank_tran_id : transId,
+                    fintech_use_num : fin_use_num,
+                    inquiry_type : "A",
+                    inquiry_base : "D",
+                    from_date : "20200510",
+                    to_date : "20200515",
+                    sort_order : "D",
+                    tran_dtime : "20200515130900"
+                }
+            }    
+           //accesstoken get request
+            request(option, function(err, response, body) {
+                if(err) {
+                    console.error(err)
+                    throw err
+                }
+                else {
+                    var accessRequestResult = JSON.parse(body);
+                    console.log(accessRequestResult);
+                    res.json(accessRequestResult);
+                }
+            })
+        }
+    })
+})
+
+app.post('/withdraw', auth, function(req, res) {
+    var userId = req.decoded.userId;
+    var fin_use_num = req.body.fin_use_num;
+    var amount = req.body.amount;
+
+    var countnum = Math.floor(Math.random() * 1000000000) + 1;
+    var transId = "T991624360U" + countnum;
+
+    var sql = "SELECT * from fintech.user WHERE id = ?"
+
+    connection.query(sql, [userId], function(err, result){
+        if(err) {
+            console.error(err)
+            throw err
+        }
+        else {
+            console.log(result)
+            var option = {
+                method : "POST",
+                url : "https://testapi.openbanking.or.kr/v2.0/transfer/withdraw/fin_num",
+                headers : {
+                    Authorization : "Bearer " + result[0].accesstoken,
+                    "Content-Type" : "application/json"
+                },
+                json : {
+                    bank_tran_id: transId,
+                    cntr_account_type: "N",
+                    cntr_account_num: "0627325084",
+                    dps_print_content: "쇼핑몰환불",
+                    fintech_use_num: fin_use_num,
+                    wd_print_content: "오픈뱅킹출금",
+                    tran_amt: amount,
+                    tran_dtime: "20200515130900",
+                    req_client_name: "홍길동",
+                    req_client_fintech_use_num: fin_use_num,
+                    req_client_num: "HONGGILDONG1234",
+                    transfer_purpose: "TR",
+                    recv_client_name: "김민제",
+                    recv_client_bank_code: "097",
+                    recv_client_account_num: "0627325084"
+                }
+            }    
+           //accesstoken get request
+            request(option, function(err, response, body) {
+                if(err) {
+                    console.error(err)
+                    throw err
+                }
+                else {
+                    console.log(body)
+                    if(body.rsp_code == 'A0000') {
+                        res.json(1);
+                    }
+                }
+            })
+        }
+    })
+})
+
+// app.post('/deposit', function(req, res) {
+//     var userId = req.decoded.userId;
+//     var fin_use_num = req.body.fin_use_num;
+//     var amount = req.body.amount;
+
+//     var countnum = Math.floor(Math.random() * 1000000000) + 1;
+//     var transId = "T991624360U" + countnum;
+
+//     var sql = "SELECT * from fintech.user WHERE id = ?"
+
+//     connection.query(sql, [userId], function(err, result){
+//         if(err) {
+//             console.error(err)
+//             throw err
+//         }
+//         else {
+//             console.log(result)
+//             var option = {
+//                 method : "POST",
+//                 url : "https://testapi.openbanking.or.kr/v2.0/transfer/deposit/fin_num",
+//                 headers : {
+//                     Authorization : "Bearer " + result[0].accesstoken,
+//                     "Content-Type" : "application/json"
+//                 },
+//                 json : {
+//                     cntr_account_type : "N",
+//                     cntr_account_num : "6668531544",
+//                     wd_pass_phrase : "NONE",
+//                     wd_print_content : "환불금액",
+//                     name_check_option : "off",
+//                     tran_dtime : "20200515224400",
+//                     req_cnt : "1",
+//                     req_list : [
+//                         {
+//                             tran_no : "1",
+//                             bank_tran_id : transId,
+//                             fintech_use_num : fin_use_num,
+//                             print_content : "쇼핑몰환불",
+//                             tran_amt : amount,
+//                             req_client_name : "홍길동",
+//                             req_client_bank_code : "097",
+//                             req_client_account_num : "91757515010",
+//                             req_client_num : "HONGGILDONG1234",
+//                             transfer_purpose : "TR"			
+//                         }
+//                     ]}
+//                 }
+//            //accesstoken get request
+//             request(option, function(err, response, body) {
+//                 if(err) {
+//                     console.error(err)
+//                     throw err
+//                 }
+//                 else {
+//                     console.log(body)
+//                     if(body.rsp_code == 'A0000') {
+//                         res.json(1);
+//                     }
+//                 }
+//             })
+//         }
+//     })
+// })
+
 
 app.listen(3000)

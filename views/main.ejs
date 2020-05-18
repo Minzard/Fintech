@@ -282,7 +282,7 @@
         fetchUserData();
         function fetchUserData(){
             $.ajax({
-                url:'http://localhost:3000/list',
+                url:'/list',
                 type : 'POST',
                 headers : {
                     'ourtoken' : jwtToken
@@ -300,7 +300,7 @@
                                             '</div>'+
                                     '<div class="ml-auto align-self-end">'+
 											'<a href="/balance?fin_use_num='+data.res_list[i].fintech_use_num+'">잔액조회</a>'+"||||"+
-											'<a href="/qrcode?fin_use_num='+data.res_list[i].fintech_use_num+'">QR생성</a>'+
+											'<a href="/qrCode?fin_use_num='+data.res_list[i].fintech_use_num+'">QR생성</a>'+
                                             '</div>'+
                                             '</div>'+
                                             '</div>'+
